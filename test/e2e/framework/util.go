@@ -257,7 +257,8 @@ type ContainerFailures struct {
 func GetMasterHost() string {
 	masterUrl, err := url.Parse(TestContext.Host)
 	ExpectNoError(err)
-	return masterUrl.Host
+        h := strings.Split(masterUrl.Host, ":")
+        return h[0]
 }
 
 func nowStamp() string {

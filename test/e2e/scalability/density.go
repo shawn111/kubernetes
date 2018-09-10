@@ -125,7 +125,7 @@ func (dtc *DensityTestConfig) deleteDaemonSets(numberOfClients int, testPhase *t
 	}
 }
 
-func density30AddonResourceVerifier(numNodes int) map[string]framework.ResourceConstraint {
+func density10AddonResourceVerifier(numNodes int) map[string]framework.ResourceConstraint {
 	var apiserverMem uint64
 	var controllerMem uint64
 	var schedulerMem uint64
@@ -462,25 +462,22 @@ var _ = SIGDescribe("Density", func() {
 	densityTests := []Density{
 		// TODO: Expose runLatencyTest as ginkgo flag.
 		{podsPerNode: 3, runLatencyTest: false, kind: api.Kind("ReplicationController")},
-		{podsPerNode: 30, runLatencyTest: true, kind: api.Kind("ReplicationController")},
-		{podsPerNode: 50, runLatencyTest: false, kind: api.Kind("ReplicationController")},
-		{podsPerNode: 95, runLatencyTest: true, kind: api.Kind("ReplicationController")},
-		{podsPerNode: 100, runLatencyTest: false, kind: api.Kind("ReplicationController")},
+		{podsPerNode: 10, runLatencyTest: true, kind: api.Kind("ReplicationController")},
 		// Tests for other resource types:
-		{podsPerNode: 30, runLatencyTest: true, kind: extensions.Kind("Deployment")},
-		{podsPerNode: 30, runLatencyTest: true, kind: batch.Kind("Job")},
+		{podsPerNode: 10, runLatencyTest: true, kind: extensions.Kind("Deployment")},
+		{podsPerNode: 10, runLatencyTest: true, kind: batch.Kind("Job")},
 		// Test scheduling when daemons are preset
-		{podsPerNode: 30, runLatencyTest: true, kind: api.Kind("ReplicationController"), daemonsPerNode: 2},
+		{podsPerNode: 10, runLatencyTest: true, kind: api.Kind("ReplicationController"), daemonsPerNode: 2},
 		// Test with secrets
-		{podsPerNode: 30, runLatencyTest: true, kind: extensions.Kind("Deployment"), secretsPerPod: 2},
+		{podsPerNode: 10, runLatencyTest: true, kind: extensions.Kind("Deployment"), secretsPerPod: 2},
 		// Test with configmaps
-		{podsPerNode: 30, runLatencyTest: true, kind: extensions.Kind("Deployment"), configMapsPerPod: 2},
+		{podsPerNode: 10, runLatencyTest: true, kind: extensions.Kind("Deployment"), configMapsPerPod: 2},
 	}
 
 	for _, testArg := range densityTests {
 		feature := "ManualPerformance"
 		switch testArg.podsPerNode {
-		case 30:
+		case 10:
 			if testArg.kind == api.Kind("ReplicationController") && testArg.daemonsPerNode == 0 && testArg.secretsPerPod == 0 && testArg.configMapsPerPod == 0 {
 				feature = "Performance"
 			}
@@ -508,8 +505,8 @@ var _ = SIGDescribe("Density", func() {
 			defer nodePreparer.CleanupNodes()
 
 			podsPerNode := itArg.podsPerNode
-			if podsPerNode == 30 {
-				f.AddonResourceConstraints = func() map[string]framework.ResourceConstraint { return density30AddonResourceVerifier(nodeCount) }()
+			if podsPerNode == 10 {
+				f.AddonResourceConstraints = func() map[string]framework.ResourceConstraint { return density10AddonResourceVerifier(nodeCount) }()
 			}
 			totalPods = (podsPerNode - itArg.daemonsPerNode) * nodeCount
 			fileHndl, err := os.Create(fmt.Sprintf(framework.TestContext.OutputDir+"/%s/pod_states.csv", uuid))
@@ -707,7 +704,7 @@ var _ = SIGDescribe("Density", func() {
 				// more evenly between nodes.
 				cpuRequest := *resource.NewMilliQuantity(nodeCpuCapacity/5, resource.DecimalSI)
 				memRequest := *resource.NewQuantity(nodeMemCapacity/5, resource.DecimalSI)
-				if podsPerNode > 30 {
+				if podsPerNode > 10 {
 					// This is to make them schedulable on high-density tests
 					// (e.g. 100 pods/node kubemark).
 					cpuRequest = *resource.NewMilliQuantity(0, resource.DecimalSI)
